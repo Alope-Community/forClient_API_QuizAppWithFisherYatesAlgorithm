@@ -1,7 +1,7 @@
 <?php
 
 $routes = [
-    '' => ['AuthController', 'index'],
+    '' => ['HomeController', 'index'],
     'login' => ['AuthController', 'login'],
     'register' => ['AuthController', 'register'],
 ];

@@ -1,7 +1,10 @@
 <?php
 require_once 'config/database.php';
 require_once 'routes.php';
-require_once 'controllers/AuthController.php'; // tambahkan controller lain jika ada
+
+// 
+require_once 'controllers/AuthController.php'; 
+require_once 'controllers/HomeController.php'; 
 
 $url = isset($_GET['url']) ? rtrim($_GET['url'], '/') : '';
 $url = filter_var($url, FILTER_SANITIZE_URL);
