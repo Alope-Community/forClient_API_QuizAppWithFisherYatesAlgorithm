@@ -5,6 +5,7 @@ require_once 'routes.php';
 // 
 require_once 'controllers/AuthController.php'; 
 require_once 'controllers/HomeController.php'; 
+require_once 'controllers/QuizController.php'; 
 
 $url = isset($_GET['url']) ? rtrim($_GET['url'], '/') : '';
 $url = filter_var($url, FILTER_SANITIZE_URL);
