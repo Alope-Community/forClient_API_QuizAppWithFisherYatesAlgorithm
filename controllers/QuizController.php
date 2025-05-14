@@ -57,4 +57,108 @@ class QuizController {
             ]);
         }
     }
+
+    // ADMIN
+    public function createQuestion() {
+        global $pdo;
+
+        // request parameters
+        $question       = $_POST['question'] ?? '';
+        $image          = $_POST['image'] ?? '';
+        $difficulty     = $_POST['difficulty'] ?? '';
+        $answer         = $_POST['answer'] ?? '';
+
+        header('Content-Type: application/json');
+
+        try {
+            // Query Insert Data Account
+            $stmt = $pdo->prepare("INSERT INTO questions (question, image, difficulty, answer) VALUES (:question, :image, :difficulty, :answer)");
+            $result = $stmt->execute([
+                'question'      => $question,
+                'image'         => $image,
+                'difficulty'    => $difficulty,
+                'answer'        => $answer,
+            ]);
+
+            if ($result) {
+                // Get inserted account
+                $stmt = $pdo->prepare("SELECT * FROM questions WHERE question = :question");
+                $stmt->execute(['question' => $question]);
+                $question = $stmt->fetch(PDO::FETCH_ASSOC);
+                
+                // Making Response Success Insert
+                http_response_code(200);  // status code OK
+                echo json_encode([
+                    'status' => 'success',
+                    'message' => 'Tambah Soal berhasil',
+                    'data' => [
+                        'question_id' => $question['id']
+                    ]
+                ]);
+            } else {
+                // Making Response Error Insert
+                http_response_code(400);  // status code Bad Request
+                echo json_encode([
+                    'status' => 'error',
+                    'message' => 'Gagal Tambah Soal'
+                ]);
+            }
+        } catch (PDOException $e) {
+            // Making Response Error Server
+            http_response_code(500); // status code Internal Server Error
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Terjadi kesalahan pada server.',
+                'error' => $e->getMessage()
+            ]);
+        }
+
+        exit;
+    }
+
+    public function createOption() {
+        global $pdo;
+
+        // request parameters
+        $question_id        = $_POST['question_id'] ?? '';
+        $value              = $_POST['value'] ?? '';
+
+        header('Content-Type: application/json');
+
+        try {
+            // Query Insert Data Account
+            $stmt = $pdo->prepare("INSERT INTO options (question_id, value) VALUES (:question_id, :value)");
+            $result = $stmt->execute([
+                'question_id'   => $question_id,
+                'value'         => $value,
+            ]);
+
+            if ($result) {
+                // Making Response Success Insert
+                http_response_code(200);  // status code OK
+                echo json_encode([
+                    'status' => 'success',
+                    'message' => 'Tambah Opsi Jawaban berhasil',
+                    'data' => []
+                ]);
+            } else {
+                // Making Response Error Insert
+                http_response_code(400);  // status code Bad Request
+                echo json_encode([
+                    'status' => 'error',
+                    'message' => 'Gagal Tambah Opsi Jawaban'
+                ]);
+            }
+        } catch (PDOException $e) {
+            // Making Response Error Server
+            http_response_code(500); // status code Internal Server Error
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Terjadi kesalahan pada server.',
+                'error' => $e->getMessage()
+            ]);
+        }
+
+        exit;
+    }
 }
