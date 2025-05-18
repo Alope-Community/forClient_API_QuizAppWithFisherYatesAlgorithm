@@ -315,4 +315,48 @@ class QuizController {
 
         exit;
     }
+
+    public function deleteOption() {
+        global $pdo;
+
+        // request parameters
+        $id        = $_POST['id'] ?? '';
+
+        header('Content-Type: application/json');
+
+        try {
+            // Query Delete Data Account
+            $stmt = $pdo->prepare("DELETE FROM options WHERE id=:id");
+            $result = $stmt->execute([
+                'id'        => $id,
+            ]);
+
+            if ($result) {
+                // Making Response Success Delete
+                http_response_code(200);  // status code OK
+                echo json_encode([
+                    'status' => 'success',
+                    'message' => 'Hapus Opsi Jawaban berhasil',
+                    'data' => []
+                ]);
+            } else {
+                // Making Response Error Delete
+                http_response_code(400);  // status code Bad Request
+                echo json_encode([
+                    'status' => 'error',
+                    'message' => 'Gagal Hapus Opsi Jawaban'
+                ]);
+            }
+        } catch (PDOException $e) {
+            // Making Response Error Server
+            http_response_code(500); // status code Internal Server Error
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Terjadi kesalahan pada server.',
+                'error' => $e->getMessage()
+            ]);
+        }
+
+        exit;
+    }
 }
