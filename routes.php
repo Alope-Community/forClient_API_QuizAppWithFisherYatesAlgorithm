@@ -21,4 +21,5 @@ $routes = [
 
     // Scores Route
     'scores' => ['ScoreController', 'scores'],
+    'create-score' => ['ScoreController', 'createScore'],
 ];
