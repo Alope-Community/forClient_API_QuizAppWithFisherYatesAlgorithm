@@ -11,10 +11,38 @@ class ScoreController {
 
         try {
             if ($difficulty) {
-                $stmt = $pdo->prepare("SELECT * FROM scores WHERE difficulty = :difficulty ORDER BY score DESC");
+                $stmt = $pdo->prepare("
+                    SELECT 
+                        s.*,
+                        a.name AS account_name
+                    FROM 
+                        scores s
+                    INNER JOIN
+                        accounts a
+                    ON
+                        a.id = s.account_id
+                    WHERE 
+                        difficulty = :difficulty 
+                    ORDER BY 
+                        score 
+                    DESC
+                ");
                 $stmt->execute(['difficulty' => $difficulty]);
             } else {
-                $stmt = $pdo->prepare("SELECT * FROM scores ORDER BY score DESC");
+                $stmt = $pdo->prepare("
+                    SELECT 
+                        s.*,
+                        a.name AS account_name
+                    FROM 
+                        scores s
+                    INNER JOIN
+                        accounts a
+                    ON
+                        a.id = s.account_id
+                    ORDER BY 
+                        score 
+                    DESC
+                ");
                 $stmt->execute();
             }
             

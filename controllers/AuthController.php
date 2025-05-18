@@ -29,6 +29,7 @@ class AuthController {
                     'status' => 'success',
                     'message' => 'Login berhasil',
                     'data' => [
+                        'id' => $account['id'],
                         'name' => $account['name'],
                         'username' => $account['username'],
                         'role' => $account['role']
