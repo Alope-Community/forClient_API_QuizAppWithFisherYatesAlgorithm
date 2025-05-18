@@ -2,14 +2,19 @@
 require_once 'tool/fisherYatesShuffle.php';
 
 class QuizController {
+
+      // //////////////////////////////////////////////////////////////////////////////////////// 
+    //      QUESTION SECTION                                                                   //
+    //      This section contains methods for managing questions for quiz                      //
+    //      Including: listing, creating, updating and deleting questions                      //
+    // ////////////////////////////////////////////////////////////////////////////////////////
+
     public function questions() {
         global $pdo;
 
         $difficulty= $_GET["difficulty"];
 
         try {
-            // $stmt = $pdo->prepare("SELECT * FROM questions ORDER BY RAND() LIMIT 10");
-
             $stmt = $pdo->prepare("SELECT * FROM questions WHERE difficulty= :difficulty");
             $stmt->execute(['difficulty' => $difficulty]);
             $questions = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -31,34 +36,6 @@ class QuizController {
         }
     }
     
-    public function options() {
-        global $pdo;
-
-        $question_id= $_GET["question_id"];
-
-        try {
-            $stmt = $pdo->prepare("SELECT * FROM options WHERE question_id= :question_id");
-            $stmt->execute(['question_id' => $question_id]);
-            $options = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-            $shuffled = fisherYatesShuffle($options);
- 
-            $selectedOptions = array_slice($shuffled, 0, 10);
-
-            header('Content-Type: application/json');
-            echo json_encode([
-                'status' => 'success',
-                'data' => $selectedOptions
-            ]);
-        } catch (PDOException $e) {
-            echo json_encode([
-                'status' => 'error',
-                'message' => $e->getMessage()
-            ]);
-        }
-    }
-
-    // ADMIN
     public function createQuestion() {
         global $pdo;
 
@@ -194,7 +171,7 @@ class QuizController {
                     ]
                 ]);
             } else {
-                // Making Response Error Insert
+                // Making Response Error Delete
                 http_response_code(400);  // status code Bad Request
                 echo json_encode([
                     'status' => 'error',
@@ -212,6 +189,39 @@ class QuizController {
         }
 
         exit;
+    }
+
+    // //////////////////////////////////////////////////////////////////////////////////////// 
+    //      OPTION SECTION                                                                     //
+    //      This section contains methods for managing options/choices for quiz questions      //
+    //      Including: listing, creating, updating and deleting options                        //
+    // ////////////////////////////////////////////////////////////////////////////////////////
+
+    public function options() {
+        global $pdo;
+
+        $question_id= $_GET["question_id"];
+
+        try {
+            $stmt = $pdo->prepare("SELECT * FROM options WHERE question_id= :question_id");
+            $stmt->execute(['question_id' => $question_id]);
+            $options = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            $shuffled = fisherYatesShuffle($options);
+ 
+            $selectedOptions = array_slice($shuffled, 0, 10);
+
+            header('Content-Type: application/json');
+            echo json_encode([
+                'status' => 'success',
+                'data' => $selectedOptions
+            ]);
+        } catch (PDOException $e) {
+            echo json_encode([
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ]);
+        }
     }
 
     public function createOption() {
@@ -245,6 +255,52 @@ class QuizController {
                 echo json_encode([
                     'status' => 'error',
                     'message' => 'Gagal Tambah Opsi Jawaban'
+                ]);
+            }
+        } catch (PDOException $e) {
+            // Making Response Error Server
+            http_response_code(500); // status code Internal Server Error
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Terjadi kesalahan pada server.',
+                'error' => $e->getMessage()
+            ]);
+        }
+
+        exit;
+    }
+    
+    public function updateOption() {
+        global $pdo;
+
+        // request parameters
+        $id        = $_POST['id'] ?? '';
+        $value     = $_POST['value'] ?? '';
+
+        header('Content-Type: application/json');
+
+        try {
+            // Query Update Data Account
+            $stmt = $pdo->prepare("UPDATE options SET value=:value WHERE id=:id");
+            $result = $stmt->execute([
+                'id'        => $id,
+                'value'     => $value,
+            ]);
+
+            if ($result) {
+                // Making Response Success Update
+                http_response_code(200);  // status code OK
+                echo json_encode([
+                    'status' => 'success',
+                    'message' => 'Update Opsi Jawaban berhasil',
+                    'data' => []
+                ]);
+            } else {
+                // Making Response Error Update
+                http_response_code(400);  // status code Bad Request
+                echo json_encode([
+                    'status' => 'error',
+                    'message' => 'Gagal Update Opsi Jawaban'
                 ]);
             }
         } catch (PDOException $e) {

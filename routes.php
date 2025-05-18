@@ -16,4 +16,6 @@ $routes = [
     // Options Route
     'options' => ['QuizController', 'options'],
     'create-option' => ['QuizController', 'createOption'],
+    'update-option' => ['QuizController', 'updateOption'],
+    'delete-option' => ['QuizController', 'deleteOption'],
 ];
