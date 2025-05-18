@@ -12,7 +12,7 @@ class AuthController {
         $password = $_POST['password'] ?? '';
     
         header('Content-Type: application/json');
-    
+
         try {
             $stmt = $pdo->prepare("SELECT * FROM accounts WHERE username = :username AND password = :password");
             $stmt->execute([

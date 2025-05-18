@@ -71,7 +71,7 @@ class QuizController {
         header('Content-Type: application/json');
 
         try {
-            // Query Insert Data Account
+            // Query Insert Data Question
             $stmt = $pdo->prepare("INSERT INTO questions (question, image, difficulty, answer) VALUES (:question, :image, :difficulty, :answer)");
             $result = $stmt->execute([
                 'question'      => $question,
@@ -81,7 +81,7 @@ class QuizController {
             ]);
 
             if ($result) {
-                // Get inserted account
+                // Get inserted Question
                 $stmt = $pdo->prepare("SELECT * FROM questions WHERE question = :question");
                 $stmt->execute(['question' => $question]);
                 $question = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -101,6 +101,59 @@ class QuizController {
                 echo json_encode([
                     'status' => 'error',
                     'message' => 'Gagal Tambah Soal'
+                ]);
+            }
+        } catch (PDOException $e) {
+            // Making Response Error Server
+            http_response_code(500); // status code Internal Server Error
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Terjadi kesalahan pada server.',
+                'error' => $e->getMessage()
+            ]);
+        }
+
+        exit;
+    }
+    
+    public function updateQuestion() {
+        global $pdo;
+
+        // request parameters
+        $id             = $_POST['id'] ?? '';
+        $question       = $_POST['question'] ?? '';
+        $image          = $_POST['image'] ?? '';
+        $difficulty     = $_POST['difficulty'] ?? '';
+        $answer         = $_POST['answer'] ?? '';
+
+        header('Content-Type: application/json');
+
+        try {
+            // Query Update Data Question
+            $stmt = $pdo->prepare("UPDATE questions SET question=:question, image=:image, difficulty=:difficulty, answer=:answer WHERE id=:id");
+            $result = $stmt->execute([
+                'id'            => $id,
+                'question'      => $question,
+                'image'         => $image,
+                'difficulty'    => $difficulty,
+                'answer'        => $answer,
+            ]);
+
+            if ($result) {
+                http_response_code(200);  // status code OK
+                echo json_encode([
+                    'status' => 'success',
+                    'message' => 'Update Soal berhasil',
+                    'data' => [
+                        'question_id' => $id
+                    ]
+                ]);
+            } else {
+                // Making Response Error Insert
+                http_response_code(400);  // status code Bad Request
+                echo json_encode([
+                    'status' => 'error',
+                    'message' => 'Gagal Update Soal'
                 ]);
             }
         } catch (PDOException $e) {
