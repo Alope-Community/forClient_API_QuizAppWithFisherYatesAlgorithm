@@ -29,10 +29,7 @@ class QuizController {
                 'data' => $selectedQuestions
             ]);
         } catch (PDOException $e) {
-            echo json_encode([
-                'status' => 'error',
-                'message' => $e->getMessage()
-            ]);
+            resError('Terjadi kesalahan pada server.', $e->getMessage(), 500);
         }
     }
     
@@ -81,13 +78,7 @@ class QuizController {
                 ]);
             }
         } catch (PDOException $e) {
-            // Making Response Error Server
-            http_response_code(500); // status code Internal Server Error
-            echo json_encode([
-                'status' => 'error',
-                'message' => 'Terjadi kesalahan pada server.',
-                'error' => $e->getMessage()
-            ]);
+            resError('Terjadi kesalahan pada server.', $e->getMessage(), 500);
         }
 
         exit;
@@ -134,13 +125,7 @@ class QuizController {
                 ]);
             }
         } catch (PDOException $e) {
-            // Making Response Error Server
-            http_response_code(500); // status code Internal Server Error
-            echo json_encode([
-                'status' => 'error',
-                'message' => 'Terjadi kesalahan pada server.',
-                'error' => $e->getMessage()
-            ]);
+            resError('Terjadi kesalahan pada server.', $e->getMessage(), 500);
         }
 
         exit;
@@ -179,13 +164,7 @@ class QuizController {
                 ]);
             }
         } catch (PDOException $e) {
-            // Making Response Error Server
-            http_response_code(500); // status code Internal Server Error
-            echo json_encode([
-                'status' => 'error',
-                'message' => 'Terjadi kesalahan pada server.',
-                'error' => $e->getMessage()
-            ]);
+            resError('Terjadi kesalahan pada server.', $e->getMessage(), 500);
         }
 
         exit;
@@ -217,10 +196,7 @@ class QuizController {
                 'data' => $selectedOptions
             ]);
         } catch (PDOException $e) {
-            echo json_encode([
-                'status' => 'error',
-                'message' => $e->getMessage()
-            ]);
+            resError('Terjadi kesalahan pada server.', $e->getMessage(), 500);
         }
     }
 
@@ -258,13 +234,7 @@ class QuizController {
                 ]);
             }
         } catch (PDOException $e) {
-            // Making Response Error Server
-            http_response_code(500); // status code Internal Server Error
-            echo json_encode([
-                'status' => 'error',
-                'message' => 'Terjadi kesalahan pada server.',
-                'error' => $e->getMessage()
-            ]);
+            resError('Terjadi kesalahan pada server.', $e->getMessage(), 500);
         }
 
         exit;
@@ -304,13 +274,7 @@ class QuizController {
                 ]);
             }
         } catch (PDOException $e) {
-            // Making Response Error Server
-            http_response_code(500); // status code Internal Server Error
-            echo json_encode([
-                'status' => 'error',
-                'message' => 'Terjadi kesalahan pada server.',
-                'error' => $e->getMessage()
-            ]);
+            resError('Terjadi kesalahan pada server.', $e->getMessage(), 500);
         }
 
         exit;
@@ -348,13 +312,7 @@ class QuizController {
                 ]);
             }
         } catch (PDOException $e) {
-            // Making Response Error Server
-            http_response_code(500); // status code Internal Server Error
-            echo json_encode([
-                'status' => 'error',
-                'message' => 'Terjadi kesalahan pada server.',
-                'error' => $e->getMessage()
-            ]);
+            resError('Terjadi kesalahan pada server.', $e->getMessage(), 500);
         }
 
         exit;
