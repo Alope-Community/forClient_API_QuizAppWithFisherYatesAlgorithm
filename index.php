@@ -1,11 +1,13 @@
 <?php
 require_once 'config/database.php';
 require_once 'routes.php';
+require_once 'functions/response.php';
 
 // 
 require_once 'controllers/AuthController.php'; 
 require_once 'controllers/HomeController.php'; 
 require_once 'controllers/QuizController.php'; 
+require_once 'controllers/ScoreController.php'; 
 
 $url = isset($_GET['url']) ? rtrim($_GET['url'], '/') : '';
 $url = filter_var($url, FILTER_SANITIZE_URL);
