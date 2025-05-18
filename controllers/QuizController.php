@@ -168,6 +168,51 @@ class QuizController {
 
         exit;
     }
+    
+    public function deleteQuestion() {
+        global $pdo;
+
+        // request parameters
+        $id = $_POST['id'] ?? '';
+
+        header('Content-Type: application/json');
+
+        try {
+            // Query Delete Data Question
+            $stmt = $pdo->prepare("DELETE FROM questions WHERE id=:id");
+            $result = $stmt->execute([
+                'id'            => $id,
+            ]);
+
+            if ($result) {
+                http_response_code(200);  // status code OK
+                echo json_encode([
+                    'status' => 'success',
+                    'message' => 'Hapus Soal berhasil',
+                    'data' => [
+                        'question_id' => $id
+                    ]
+                ]);
+            } else {
+                // Making Response Error Insert
+                http_response_code(400);  // status code Bad Request
+                echo json_encode([
+                    'status' => 'error',
+                    'message' => 'Gagal Hapus Soal'
+                ]);
+            }
+        } catch (PDOException $e) {
+            // Making Response Error Server
+            http_response_code(500); // status code Internal Server Error
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Terjadi kesalahan pada server.',
+                'error' => $e->getMessage()
+            ]);
+        }
+
+        exit;
+    }
 
     public function createOption() {
         global $pdo;
