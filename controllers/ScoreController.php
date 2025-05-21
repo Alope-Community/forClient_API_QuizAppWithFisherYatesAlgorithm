@@ -6,26 +6,44 @@ class ScoreController {
 
         // request parameters
         $difficulty     = $_GET['difficulty'] ?? '';
+        $type           = $_GET['type'] ?? 'leaderboard';
     
         header('Content-Type: application/json');
 
         try {
             if ($difficulty) {
                 $stmt = $pdo->prepare("
+                    WITH ranked_scores AS (
+                        SELECT 
+                            s.id,
+                            s.account_id,
+                            s.score,
+                            s.difficulty,
+                            s.created_at,
+                            a.name AS account_name,
+                            ROW_NUMBER() OVER (
+                                PARTITION BY s.account_id 
+                                ORDER BY s.score DESC, s.created_at DESC
+                            ) AS rn
+                        FROM 
+                            scores s
+                        INNER JOIN accounts a ON a.id = s.account_id
+                        WHERE 
+                            s.difficulty = :difficulty
+                    )
                     SELECT 
-                        s.*,
-                        a.name AS account_name
+                        account_id,
+                        score,
+                        difficulty,
+                        created_at,
+                        account_name
                     FROM 
-                        scores s
-                    INNER JOIN
-                        accounts a
-                    ON
-                        a.id = s.account_id
+                        ranked_scores
                     WHERE 
-                        difficulty = :difficulty 
+                        rn = 1
                     ORDER BY 
-                        score 
-                    DESC
+                        score DESC;
+
                 ");
                 $stmt->execute(['difficulty' => $difficulty]);
             } else {
