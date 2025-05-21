@@ -22,4 +22,8 @@ $routes = [
     // Scores Route
     'scores' => ['ScoreController', 'scores'],
     'create-score' => ['ScoreController', 'createScore'],
+
+    // Course Route
+    'courses' => ['CourseController', 'courses'],
+    'show-courses' => ['CourseController', 'showCourse'],
 ];

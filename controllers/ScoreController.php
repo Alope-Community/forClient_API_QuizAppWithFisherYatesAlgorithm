@@ -32,6 +32,7 @@ class ScoreController {
                             s.difficulty = :difficulty
                     )
                     SELECT 
+                        id,
                         account_id,
                         score,
                         difficulty,
