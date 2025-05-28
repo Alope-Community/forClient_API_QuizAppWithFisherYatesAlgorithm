@@ -59,7 +59,6 @@ class CourseController {
                     a.id = c.account_id
                 WHERE
                     c.id = :id
-                
             ");
 
             $stmt->execute([

@@ -13,23 +13,57 @@ class QuizController {
         global $pdo;
 
         $difficulty= $_GET["difficulty"];
+        $for= $_GET["for"] ?? 'user';
 
-        try {
-            $stmt = $pdo->prepare("SELECT * FROM questions WHERE difficulty= :difficulty");
-            $stmt->execute(['difficulty' => $difficulty]);
-            $questions = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-            $shuffled = fisherYatesShuffle($questions);
-
-            $selectedQuestions = array_slice($shuffled, 0, 10);
-
-            header('Content-Type: application/json');
-            echo json_encode([
-                'status' => 'success',
-                'data' => $selectedQuestions
-            ]);
-        } catch (PDOException $e) {
-            resError('Terjadi kesalahan pada server.', $e->getMessage(), 500);
+        if($for == 'admin'){
+            try {
+                $stmt = $pdo->prepare("
+                    SELECT 
+                        q.id AS question_id,
+                        q.question,
+                        q.difficulty,
+                        q.image,
+                        q.answer,
+                        MIN(o.id) AS option_id,
+                        JSON_ARRAYAGG(o.value) AS value
+                    FROM 
+                        questions q
+                    INNER JOIN 
+                        options o ON o.question_id = q.id
+                    WHERE 
+                        q.difficulty = :difficulty
+                    GROUP BY 
+                        q.id, q.question, q.difficulty, q.image, q.answer;
+                ");
+                $stmt->execute(['difficulty' => $difficulty]);
+                $questions = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+                header('Content-Type: application/json');
+                echo json_encode([
+                    'status' => 'success',
+                    'data' => $questions
+                ]);
+            } catch (PDOException $e) {
+                resError('Terjadi kesalahan pada server.', $e->getMessage(), 500);
+            }
+        } else{
+            try {
+                $stmt = $pdo->prepare("SELECT * FROM questions WHERE difficulty= :difficulty");
+                $stmt->execute(['difficulty' => $difficulty]);
+                $questions = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+                $shuffled = fisherYatesShuffle($questions);
+    
+                $selectedQuestions = array_slice($shuffled, 0, 10);
+    
+                header('Content-Type: application/json');
+                echo json_encode([
+                    'status' => 'success',
+                    'data' => $selectedQuestions
+                ]);
+            } catch (PDOException $e) {
+                resError('Terjadi kesalahan pada server.', $e->getMessage(), 500);
+            }
         }
     }
     
