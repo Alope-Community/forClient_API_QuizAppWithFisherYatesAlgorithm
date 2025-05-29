@@ -69,54 +69,91 @@ class QuizController {
     
     public function createQuestion() {
         global $pdo;
-
-        // request parameters
-        $question       = $_POST['question'] ?? '';
-        $image          = $_POST['image'] ?? '';
-        $difficulty     = $_POST['difficulty'] ?? '';
-        $answer         = $_POST['answer'] ?? '';
-
+    
         header('Content-Type: application/json');
-
+    
         try {
-            // Query Insert Data Question
+            $question   = $_POST['question'] ?? '';
+            $difficulty = $_POST['difficulty'] ?? '';
+            $answer     = $_POST['answer'] ?? '';
+    
+            $uploadDir = __DIR__ . '/../uploads/';
+            if (!is_dir($uploadDir)) {
+                mkdir($uploadDir, 0755, true);
+            }
+    
+            $imageFileName = null;
+            if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
+                $fileTmpPath = $_FILES['image']['tmp_name'];
+                $originalFileName = $_FILES['image']['name'];
+                $fileSize = $_FILES['image']['size'];
+                $fileType = $_FILES['image']['type'];
+    
+                // Bisa tambahkan validasi tipe file (misal hanya jpg/png)
+                $allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+                if (!in_array($fileType, $allowedTypes)) {
+                    http_response_code(400);
+                    echo json_encode([
+                        'status' => 'error',
+                        'message' => 'Tipe file tidak didukung. Hanya JPG dan PNG yang diperbolehkan.'
+                    ]);
+                    exit;
+                }
+    
+                $ext = pathinfo($originalFileName, PATHINFO_EXTENSION);
+                $imageFileName = uniqid('img_') . '.' . $ext;
+    
+                $destPath = $uploadDir . $imageFileName;
+    
+                if (!move_uploaded_file($fileTmpPath, $destPath)) {
+                    http_response_code(500);
+                    echo json_encode([
+                        'status' => 'error',
+                        'message' => 'Gagal menyimpan file gambar.'
+                    ]);
+                    exit;
+                }
+
+                $imageFileName = "https://alope.id/quiz.alope.id/uploads/" . $imageFileName;
+            }
+    
             $stmt = $pdo->prepare("INSERT INTO questions (question, image, difficulty, answer) VALUES (:question, :image, :difficulty, :answer)");
             $result = $stmt->execute([
-                'question'      => $question,
-                'image'         => $image,
-                'difficulty'    => $difficulty,
-                'answer'        => $answer,
+                'question'   => $question,
+                'image'      => $imageFileName,
+                'difficulty' => $difficulty,
+                'answer'     => $answer,
             ]);
-
+    
             if ($result) {
-                // Get inserted Question
-                $stmt = $pdo->prepare("SELECT * FROM questions WHERE question = :question");
-                $stmt->execute(['question' => $question]);
-                $question = $stmt->fetch(PDO::FETCH_ASSOC);
-                
-                // Making Response Success Insert
-                http_response_code(200);  // status code OK
+                $questionId = $pdo->lastInsertId();
+    
+                http_response_code(200);
                 echo json_encode([
                     'status' => 'success',
                     'message' => 'Tambah Soal berhasil',
                     'data' => [
-                        'question_id' => $question['id']
+                        'question_id' => $questionId
                     ]
                 ]);
             } else {
-                // Making Response Error Insert
-                http_response_code(400);  // status code Bad Request
+                http_response_code(400);
                 echo json_encode([
                     'status' => 'error',
                     'message' => 'Gagal Tambah Soal'
                 ]);
             }
+    
         } catch (PDOException $e) {
-            resError('Terjadi kesalahan pada server.', $e->getMessage(), 500);
+            http_response_code(500);
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Terjadi kesalahan pada server: ' . $e->getMessage()
+            ]);
         }
-
+    
         exit;
-    }
+    }    
     
     public function updateQuestion() {
         global $pdo;
