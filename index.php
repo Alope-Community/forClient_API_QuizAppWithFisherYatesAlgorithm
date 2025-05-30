@@ -10,6 +10,7 @@ require_once 'controllers/QuizController.php';
 require_once 'controllers/ScoreController.php';
 require_once 'controllers/CourseController.php';
 
+require __DIR__ . '/vendor/autoload.php';
 
 $url = isset($_GET['url']) ? rtrim($_GET['url'], '/') : '';
 $url = filter_var($url, FILTER_SANITIZE_URL);
