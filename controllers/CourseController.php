@@ -127,4 +127,60 @@ class CourseController {
     
         exit;
     } 
+
+    public function updateCourse() {
+        global $pdo;
+
+        // request parameters
+        $id                 = $_POST['id'] ?? '';
+        $title              = $_POST['title'] ?? '';
+        $description        = $_POST['description'] ?? '';
+        $body               = $_POST['body'] ?? '';
+        $account_id         = $_POST['account_id'] ?? '';
+    
+        header('Content-Type: application/json');
+
+        try {
+            $stmt = $pdo->prepare("
+                UPDATE
+                    courses 
+                SET
+                    title = :title,
+                    description = :description,
+                    body = :body,
+                    account_id = :account_id
+                WHERE
+                    id = :id
+            ");
+
+            $result = $stmt->execute([
+                "id"            => $id,
+                "title"         => $title,
+                "description"   => $description,
+                "body"          => $body,
+                "account_id"    => $account_id,
+            ]);
+            
+            if ($result) {
+                // Making Response Success Insert
+                http_response_code(200);  // status code OK
+                echo json_encode([
+                    'status' => 'success',
+                    'message' => 'Update Course berhasil',
+                    'data' => []
+                ]);
+            } else {
+                // Making Response Error Insert
+                http_response_code(400);  // status code Bad Request
+                echo json_encode([
+                    'status' => 'error',
+                    'message' => 'Gagal Update Course'
+                ]);
+            }
+        } catch (PDOException $e) {
+            resError('Terjadi kesalahan pada server.', $e->getMessage(), 500);
+        }
+    
+        exit;
+    } 
 }
