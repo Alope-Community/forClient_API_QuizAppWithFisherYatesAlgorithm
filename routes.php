@@ -27,5 +27,6 @@ $routes = [
 
     // Course Route
     'courses' => ['CourseController', 'courses'],
-    'show-courses' => ['CourseController', 'showCourse'],
+    'show-course' => ['CourseController', 'showCourse'],
+    'create-course' => ['CourseController', 'createCourse'],
 ];
