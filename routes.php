@@ -31,4 +31,8 @@ $routes = [
     'create-course' => ['CourseController', 'createCourse'],
     'update-course' => ['CourseController', 'updateCourse'],
     'delete-course' => ['CourseController', 'deleteCourse'],
+    
+    // User Route
+    'users' => ['UserController', 'users'],
+    'delete-user' => ['UserController', 'deleteUser'],
 ];

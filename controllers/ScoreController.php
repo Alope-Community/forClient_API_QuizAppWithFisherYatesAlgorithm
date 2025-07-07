@@ -117,8 +117,10 @@ class ScoreController {
         global $pdo;
         require __DIR__ . '/../vendor/autoload.php';
 
+        $filename = 'nilai_' . date('Y-m-d_H-i-s') . '.xlsx';
+
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        header('Content-Disposition: attachment; filename="scores.xlsx"');
+        header("Content-Disposition: attachment; filename=\"$filename\"");
         header('Cache-Control: max-age=0');
 
         // Ambil semua data, urutkan berdasarkan account_name lalu created_at
