@@ -30,4 +30,5 @@ $routes = [
     'show-course' => ['CourseController', 'showCourse'],
     'create-course' => ['CourseController', 'createCourse'],
     'update-course' => ['CourseController', 'updateCourse'],
+    'delete-course' => ['CourseController', 'deleteCourse'],
 ];

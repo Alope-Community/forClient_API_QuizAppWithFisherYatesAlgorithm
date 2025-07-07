@@ -162,7 +162,7 @@ class CourseController {
             ]);
             
             if ($result) {
-                // Making Response Success Insert
+                // Making Response Success Update
                 http_response_code(200);  // status code OK
                 echo json_encode([
                     'status' => 'success',
@@ -170,7 +170,7 @@ class CourseController {
                     'data' => []
                 ]);
             } else {
-                // Making Response Error Insert
+                // Making Response Error Update
                 http_response_code(400);  // status code Bad Request
                 echo json_encode([
                     'status' => 'error',
@@ -183,4 +183,46 @@ class CourseController {
     
         exit;
     } 
+
+    public function deleteCourse(){
+        global $pdo;
+
+        header('Content-Type: application/json');
+
+        // request parameters
+        $id = $_POST["id"];
+
+        try {
+            $stmt = $pdo->prepare("
+                DELETE FROM
+                    courses
+                WHERE
+                    id = :id
+            ");
+
+            $result = $stmt->execute([
+                "id" => $id,
+            ]);
+            
+            if ($result) {
+                // Making Response Success Delete
+                http_response_code(200);  // status code OK
+                echo json_encode([
+                    'status' => 'success',
+                    'message' => 'Delete Course berhasil',
+                    'data' => []
+                ]);
+            } else {
+                // Making Response Error Delete
+                http_response_code(400);  // status code Bad Request
+                echo json_encode([
+                    'status' => 'error',
+                    'message' => 'Gagal Delete Course'
+                ]);
+            }
+        } catch (PDOException $e) {
+            resError('Terjadi kesalahan pada server.', $e->getMessage(), 500);
+        }
+
+    }
 }
