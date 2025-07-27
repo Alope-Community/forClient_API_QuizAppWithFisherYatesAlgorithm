@@ -350,6 +350,71 @@ class QuizController {
 
         exit;
     }
+    
+    public function updateOptions() {
+        global $pdo;
+
+        $question_id = $_POST['question_id'] ?? '';
+        $option_a    = $_POST['option_a'] ?? '';
+        $option_b    = $_POST['option_b'] ?? '';
+        $option_c    = $_POST['option_c'] ?? '';
+        $option_d    = $_POST['option_d'] ?? '';
+
+        header('Content-Type: application/json');
+
+        try {
+            if (empty($question_id)) {
+                http_response_code(400);
+                echo json_encode([
+                    'status' => 'error',
+                    'message' => 'question_id tidak boleh kosong'
+                ]);
+                exit;
+            }
+
+            $pdo->beginTransaction();
+
+            $stmtDelete = $pdo->prepare("DELETE FROM options WHERE question_id = :question_id");
+            $stmtDelete->execute(['question_id' => $question_id]);
+
+            $stmtInsert = $pdo->prepare("INSERT INTO options (value, question_id) VALUES (:value, :question_id)");
+
+            $options = [
+                ['key' => 'A', 'value' => $option_a],
+                ['key' => 'B', 'value' => $option_b],
+                ['key' => 'C', 'value' => $option_c],
+                ['key' => 'D', 'value' => $option_d],
+            ];
+
+            foreach ($options as $opt) {
+                $stmtInsert->execute([
+                    'value' => $opt['value'],
+                    'question_id' => $question_id,
+                ]);
+            }
+
+            $pdo->commit();
+
+            http_response_code(200);
+            echo json_encode([
+                'status' => 'success',
+                'message' => 'Update opsi berhasil',
+                'data' => ['question_id' => $question_id]
+            ]);
+        } catch (PDOException $e) {
+            $pdo->rollBack();
+            http_response_code(500);
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Terjadi kesalahan pada server.',
+                'error' => $e->getMessage()
+            ]);
+        }
+
+        exit;
+    }
+
+
 
     public function deleteOption() {
         global $pdo;

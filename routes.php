@@ -17,14 +17,22 @@ $routes = [
     'options' => ['QuizController', 'options'],
     'create-option' => ['QuizController', 'createOption'],
     'update-option' => ['QuizController', 'updateOption'],
+    'update-options' => ['QuizController', 'updateOptions'],
     'delete-option' => ['QuizController', 'deleteOption'],
 
     // Scores Route
     'scores' => ['ScoreController', 'scores'],
     'create-score' => ['ScoreController', 'createScore'],
-    'export-score' => ['ScoreController', 'exportScores'],
+    'export-scores' => ['ScoreController', 'exportScores'],
 
     // Course Route
     'courses' => ['CourseController', 'courses'],
-    'show-courses' => ['CourseController', 'showCourse'],
+    'show-course' => ['CourseController', 'showCourse'],
+    'create-course' => ['CourseController', 'createCourse'],
+    'update-course' => ['CourseController', 'updateCourse'],
+    'delete-course' => ['CourseController', 'deleteCourse'],
+    
+    // User Route
+    'users' => ['UserController', 'users'],
+    'delete-user' => ['UserController', 'deleteUser'],
 ];

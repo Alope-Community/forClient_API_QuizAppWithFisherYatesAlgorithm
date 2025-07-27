@@ -5,10 +5,11 @@ require_once 'functions/response.php';
 
 // 
 require_once 'controllers/AuthController.php'; 
+require_once 'controllers/CourseController.php';
 require_once 'controllers/HomeController.php'; 
 require_once 'controllers/QuizController.php'; 
 require_once 'controllers/ScoreController.php';
-require_once 'controllers/CourseController.php';
+require_once 'controllers/UserController.php';
 
 require __DIR__ . '/vendor/autoload.php';
 
