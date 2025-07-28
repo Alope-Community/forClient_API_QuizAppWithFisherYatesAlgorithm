@@ -34,5 +34,6 @@ $routes = [
     
     // User Route
     'users' => ['UserController', 'users'],
+    'update-user' => ['UserController', 'updateUser'],
     'delete-user' => ['UserController', 'deleteUser'],
 ];
