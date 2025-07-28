@@ -10,11 +10,13 @@ class ScoreController {
         // request parameters
         $difficulty     = $_GET['difficulty'] ?? '';
         $type           = $_GET['type'] ?? 'leaderboard';
+        $forRole           = $_GET['forRole'] ?? 'admin';
+        $accountId           = $_GET['accountId'] ?? '';
     
         header('Content-Type: application/json');
 
         try {
-            if ($difficulty) {
+            if ($difficulty && $type == 'leaderboard') {
                 $stmt = $pdo->prepare("
                     WITH ranked_scores AS (
                         SELECT 
@@ -50,6 +52,48 @@ class ScoreController {
 
                 ");
                 $stmt->execute(['difficulty' => $difficulty]);
+            } else if($difficulty && $type == 'score') {
+                if($forRole == "user"){
+                    $stmt = $pdo->prepare("
+                        SELECT 
+                            s.*,
+                            a.name AS account_name
+                        FROM 
+                            scores s
+                        INNER JOIN
+                            accounts a
+                        ON
+                            a.id = s.account_id
+                        WHERE 
+                            s.difficulty = :difficulty
+                        AND 
+                            s.account_id = :account_id
+                        ORDER BY 
+                            created_at 
+                        DESC
+
+                    ");
+                    $stmt->execute(['difficulty' => $difficulty, 'account_id' => $accountId]);
+                } else{
+                    $stmt = $pdo->prepare("
+                        SELECT 
+                            s.*,
+                            a.name AS account_name
+                        FROM 
+                            scores s
+                        INNER JOIN
+                            accounts a
+                        ON
+                            a.id = s.account_id
+                        WHERE 
+                            s.difficulty = :difficulty
+                        ORDER BY 
+                            created_at 
+                        DESC
+
+                    ");
+                    $stmt->execute(['difficulty' => $difficulty]);
+                }
             } else {
                 $stmt = $pdo->prepare("
                     SELECT 
