@@ -161,19 +161,59 @@ class QuizController {
         // request parameters
         $id             = $_POST['id'] ?? '';
         $question       = $_POST['question'] ?? '';
-        $image          = $_POST['image'] ?? '';
         $difficulty     = $_POST['difficulty'] ?? '';
         $answer         = $_POST['answer'] ?? '';
 
         header('Content-Type: application/json');
 
         try {
+
+            $uploadDir = __DIR__ . '/../uploads/';
+            if (!is_dir($uploadDir)) {
+                mkdir($uploadDir, 0755, true);
+            }
+    
+            $imageFileName = null;
+            if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
+                $fileTmpPath = $_FILES['image']['tmp_name'];
+                $originalFileName = $_FILES['image']['name'];
+                $fileSize = $_FILES['image']['size'];
+                $fileType = $_FILES['image']['type'];
+    
+                // Bisa tambahkan validasi tipe file (misal hanya jpg/png)
+                $allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+                if (!in_array($fileType, $allowedTypes)) {
+                    http_response_code(400);
+                    echo json_encode([
+                        'status' => 'error',
+                        'message' => 'Tipe file tidak didukung. Hanya JPG dan PNG yang diperbolehkan.'
+                    ]);
+                    exit;
+                }
+    
+                $ext = pathinfo($originalFileName, PATHINFO_EXTENSION);
+                $imageFileName = uniqid('img_') . '.' . $ext;
+    
+                $destPath = $uploadDir . $imageFileName;
+    
+                if (!move_uploaded_file($fileTmpPath, $destPath)) {
+                    http_response_code(500);
+                    echo json_encode([
+                        'status' => 'error',
+                        'message' => 'Gagal menyimpan file gambar.'
+                    ]);
+                    exit;
+                }
+
+                $imageFileName = "https://alope.id/quiz.alope.id/uploads/" . $imageFileName;
+            }
+
             // Query Update Data Question
             $stmt = $pdo->prepare("UPDATE questions SET question=:question, image=:image, difficulty=:difficulty, answer=:answer WHERE id=:id");
             $result = $stmt->execute([
                 'id'            => $id,
                 'question'      => $question,
-                'image'         => $image,
+                'image'         => $imageFileName,
                 'difficulty'    => $difficulty,
                 'answer'        => $answer,
             ]);
