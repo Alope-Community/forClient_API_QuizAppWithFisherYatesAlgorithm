@@ -91,15 +91,55 @@ class CourseController {
     
         header('Content-Type: application/json');
 
+        $uploadDir = __DIR__ . '/../uploads/';
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0755, true);
+        }
+        
+        $imageFileName = null;
+        if (isset($_FILES['cover']) && $_FILES['cover']['error'] === UPLOAD_ERR_OK) {
+            $fileTmpPath = $_FILES['cover']['tmp_name'];
+            $originalFileName = $_FILES['cover']['name'];
+            $fileType = $_FILES['cover']['type'];
+
+            // Bisa tambahkan validasi tipe file (misal hanya jpg/png)
+            $allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+            if (!in_array($fileType, $allowedTypes)) {
+                http_response_code(400);
+                echo json_encode([
+                    'status' => 'error',
+                    'message' => 'Tipe file tidak didukung. Hanya JPG dan PNG yang diperbolehkan.'
+                ]);
+                exit;
+            }
+
+            $ext = pathinfo($originalFileName, PATHINFO_EXTENSION);
+            $imageFileName = uniqid('course_') . '.' . $ext;
+
+            $destPath = $uploadDir . $imageFileName;
+
+            if (!move_uploaded_file($fileTmpPath, $destPath)) {
+                http_response_code(500);
+                echo json_encode([
+                    'status' => 'error',
+                    'message' => 'Gagal menyimpan file gambar.'
+                ]);
+                exit;
+            }
+
+            $imageFileName = "https://alope.id/quiz.alope.id/uploads/" . $imageFileName;
+        }
+
         try {
             $stmt = $pdo->prepare("
                 INSERT INTO
-                    courses (title, description, body, account_id)
-                VALUES (:title, :description, :body, :account_id)
+                    courses (title, cover, description, body, account_id)
+                VALUES (:title, :cover, :description, :body, :account_id)
             ");
 
             $result = $stmt->execute([
                 "title"         => $title,
+                "cover"         => $imageFileName,
                 "description"   => $description,
                 "body"          => $body,
                 "account_id"    => $account_id,
@@ -140,26 +180,91 @@ class CourseController {
     
         header('Content-Type: application/json');
 
-        try {
-            $stmt = $pdo->prepare("
-                UPDATE
-                    courses 
-                SET
-                    title = :title,
-                    description = :description,
-                    body = :body,
-                    account_id = :account_id
-                WHERE
-                    id = :id
-            ");
+        $uploadDir = __DIR__ . '/../uploads/';
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0755, true);
+        }
+        
+        $imageFileName = null;
+        if (isset($_FILES['cover']) && $_FILES['cover']['error'] === UPLOAD_ERR_OK) {
+            $fileTmpPath = $_FILES['cover']['tmp_name'];
+            $originalFileName = $_FILES['cover']['name'];
+            $fileType = $_FILES['cover']['type'];
 
-            $result = $stmt->execute([
-                "id"            => $id,
-                "title"         => $title,
-                "description"   => $description,
-                "body"          => $body,
-                "account_id"    => $account_id,
-            ]);
+            // Bisa tambahkan validasi tipe file (misal hanya jpg/png)
+            $allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+            if (!in_array($fileType, $allowedTypes)) {
+                http_response_code(400);
+                echo json_encode([
+                    'status' => 'error',
+                    'message' => 'Tipe file tidak didukung. Hanya JPG dan PNG yang diperbolehkan.'
+                ]);
+                exit;
+            }
+
+            $ext = pathinfo($originalFileName, PATHINFO_EXTENSION);
+            $imageFileName = uniqid('course_') . '.' . $ext;
+
+            $destPath = $uploadDir . $imageFileName;
+
+            if (!move_uploaded_file($fileTmpPath, $destPath)) {
+                http_response_code(500);
+                echo json_encode([
+                    'status' => 'error',
+                    'message' => 'Gagal menyimpan file gambar.'
+                ]);
+                exit;
+            }
+
+            $imageFileName = "https://alope.id/quiz.alope.id/uploads/" . $imageFileName;
+        }
+
+        try {
+            
+            if($imageFileName !== null) {
+                $stmt = $pdo->prepare("
+                    UPDATE
+                        courses 
+                    SET
+                        title = :title,
+                        cover = :cover,
+                        description = :description,
+                        body = :body,
+                        account_id = :account_id
+                    WHERE
+                        id = :id
+                ");
+
+                $result = $stmt->execute([
+                    "id"            => $id,
+                    "title"         => $title,
+                    "cover"         => $imageFileName,
+                    "description"   => $description,
+                    "body"          => $body,
+                    "account_id"    => $account_id,
+                ]);
+            } else{
+                $stmt = $pdo->prepare("
+                    UPDATE
+                        courses 
+                    SET
+                        title = :title,
+                        description = :description,
+                        body = :body,
+                        account_id = :account_id
+                    WHERE
+                        id = :id
+                ");
+
+                $result = $stmt->execute([
+                    "id"            => $id,
+                    "title"         => $title,
+                    "description"   => $description,
+                    "body"          => $body,
+                    "account_id"    => $account_id,
+                ]);
+            }
+
             
             if ($result) {
                 // Making Response Success Update
