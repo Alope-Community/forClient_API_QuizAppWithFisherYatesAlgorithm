@@ -14,7 +14,7 @@ class AuthController {
         header('Content-Type: application/json');
 
         try {
-            $stmt = $pdo->prepare("SELECT * FROM accounts WHERE username = :username AND password = :password");
+            $stmt = $pdo->prepare("SELECT * FROM accounts WHERE (username = :username OR name = :username) AND password = :password");
             $stmt->execute([
                 'username' => $username,
                 'password' => $password,

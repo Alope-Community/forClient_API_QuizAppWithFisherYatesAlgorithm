@@ -10,8 +10,8 @@ class ScoreController {
         // request parameters
         $difficulty     = $_GET['difficulty'] ?? '';
         $type           = $_GET['type'] ?? 'leaderboard';
-        $forRole           = $_GET['forRole'] ?? 'admin';
-        $accountId           = $_GET['accountId'] ?? '';
+        $forRole        = $_GET['forRole'] ?? 'admin';
+        $accountId      = $_GET['accountId'] ?? '';
     
         header('Content-Type: application/json');
 
@@ -26,6 +26,7 @@ class ScoreController {
                             s.difficulty,
                             s.created_at,
                             a.name AS account_name,
+                            a.password AS account_nisn,
                             ROW_NUMBER() OVER (
                                 PARTITION BY s.account_id 
                                 ORDER BY s.score DESC, s.created_at DESC
@@ -42,7 +43,8 @@ class ScoreController {
                         score,
                         difficulty,
                         created_at,
-                        account_name
+                        account_name,
+                        account_nisn
                     FROM 
                         ranked_scores
                     WHERE 
@@ -57,7 +59,8 @@ class ScoreController {
                     $stmt = $pdo->prepare("
                         SELECT 
                             s.*,
-                            a.name AS account_name
+                            a.name AS account_name,
+                            a.password AS account_nisn
                         FROM 
                             scores s
                         INNER JOIN
@@ -78,7 +81,8 @@ class ScoreController {
                     $stmt = $pdo->prepare("
                         SELECT 
                             s.*,
-                            a.name AS account_name
+                            a.name AS account_name,
+                            a.password AS account_nisn
                         FROM 
                             scores s
                         INNER JOIN
@@ -98,7 +102,8 @@ class ScoreController {
                 $stmt = $pdo->prepare("
                     SELECT 
                         s.*,
-                        a.name AS account_name
+                        a.name AS account_name,
+                        a.password AS account_nisn
                     FROM 
                         scores s
                     INNER JOIN
@@ -173,6 +178,7 @@ class ScoreController {
                 s.id,
                 s.account_id,
                 a.name AS account_name,
+                a.password AS account_nisn,
                 s.score,
                 s.difficulty,
                 s.created_at
@@ -189,13 +195,24 @@ class ScoreController {
         // Header kolom
         $sheet->setCellValue('A1', 'No');
         $sheet->setCellValue('B1', 'Nama');
-        $sheet->setCellValue('C1', 'Tingkat Kesulitan');
-        $sheet->setCellValue('D1', 'Skor');
-        $sheet->setCellValue('E1', 'Tanggal');
+        $sheet->setCellValue('C1', 'NISN');
+        $sheet->setCellValue('D1', 'Tingkat Kesulitan');
+        $sheet->setCellValue('E1', 'Skor');
+        $sheet->setCellValue('F1', 'Tanggal');
 
         $row = 2;
         $no = 1;
         $lastAccount = null;
+
+        $difficulty = $score['difficulty'];
+
+        if($score['difficulty'] == 'easy') {
+            $difficulty = "Mudah";
+        } else if ($score['difficulty'] == 'medium') {
+            $difficulty = "Sedang";
+        } else {
+            $difficulty = "Sulit";
+        }
 
         foreach ($scores as $score) {
             $isSameAccount = $lastAccount === $score['account_id'];
@@ -203,9 +220,10 @@ class ScoreController {
             // Tampilkan No & Nama hanya jika ini baris pertama dari akun tersebut
             $sheet->setCellValue('A' . $row, $isSameAccount ? '' : $no++);
             $sheet->setCellValue('B' . $row, $isSameAccount ? '' : $score['account_name']);
-            $sheet->setCellValue('C' . $row, ucfirst($score['difficulty']));
-            $sheet->setCellValue('D' . $row, $score['score']);
-            $sheet->setCellValue('E' . $row, $score['created_at']);
+            $sheet->setCellValue('C' . $row, $isSameAccount ? '' : $score['account_nisn']);
+            $sheet->setCellValue('D' . $row, ucfirst($score['difficulty']));
+            $sheet->setCellValue('E' . $row, $score['score']);
+            $sheet->setCellValue('F' . $row, $score['created_at']);
 
             $lastAccount = $score['account_id'];
             $row++;
