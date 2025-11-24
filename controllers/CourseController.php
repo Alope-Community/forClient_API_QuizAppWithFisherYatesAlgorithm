@@ -81,165 +81,203 @@ class CourseController {
     } 
 
     public function createCourse() {
-    global $pdo;
+        global $pdo;
 
-    // request parameters
-    $title              = $_POST['title'] ?? '';
-    $description        = $_POST['description'] ?? '';
-    $body               = $_POST['body'] ?? '';
-    $account_id         = $_POST['account_id'] ?? '';
+        // request parameters
+        $title       = $_POST['title'] ?? '';
+        $description = $_POST['description'] ?? '';
+        $body        = $_POST['body'] ?? '';
+        $account_id  = $_POST['account_id'] ?? '';
 
-    header('Content-Type: application/json');
+        header('Content-Type: application/json');
 
-    $uploadDir = __DIR__ . '/../uploads/';
-    if (!is_dir($uploadDir)) {
-        mkdir($uploadDir, 0755, true);
-    }
-    
-    $imageFileName = null;
-    $audioFileName = null;
-
-    // Handle Cover Image Upload
-    if (isset($_FILES['cover']) && $_FILES['cover']['error'] === UPLOAD_ERR_OK) {
-        $fileTmpPath = $_FILES['cover']['tmp_name'];
-        $originalFileName = $_FILES['cover']['name'];
-        $fileType = $_FILES['cover']['type'];
-
-        // Validasi tipe file gambar
-        $allowedImageTypes = ['image/jpeg', 'image/png', 'image/jpg'];
-        if (!in_array($fileType, $allowedImageTypes)) {
-            http_response_code(400);
-            echo json_encode([
-                'status' => 'error',
-                'message' => 'Tipe file gambar tidak didukung. Hanya JPG dan PNG yang diperbolehkan.'
-            ]);
-            exit;
+        $uploadDir = __DIR__ . '/../uploads/';
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0755, true);
         }
 
-        $ext = pathinfo($originalFileName, PATHINFO_EXTENSION);
-        $imageFileName = uniqid('course_cover_') . '.' . $ext;
+        $imageFileName = null;
+        $audioFileName = null;
+        $videoFileName = null;
 
-        $destPath = $uploadDir . $imageFileName;
+        /* ------------------------------------------------
+        * UPLOAD COVER IMAGE
+        * ------------------------------------------------ */
+        if (isset($_FILES['cover']) && $_FILES['cover']['error'] === UPLOAD_ERR_OK) {
+            $fileTmpPath = $_FILES['cover']['tmp_name'];
+            $originalFileName = $_FILES['cover']['name'];
+            $fileType = $_FILES['cover']['type'];
 
-        if (!move_uploaded_file($fileTmpPath, $destPath)) {
+            $allowedImageTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+            if (!in_array($fileType, $allowedImageTypes)) {
+                http_response_code(400);
+                echo json_encode(['status' => 'error', 'message' => 'Tipe file gambar tidak valid.']);
+                exit;
+            }
+
+            $ext = pathinfo($originalFileName, PATHINFO_EXTENSION);
+            $imageFileName = uniqid('course_cover_') . '.' . $ext;
+
+            $destPath = $uploadDir . $imageFileName;
+
+            if (!move_uploaded_file($fileTmpPath, $destPath)) {
+                http_response_code(500);
+                echo json_encode(['status' => 'error', 'message' => 'Gagal menyimpan file cover.']);
+                exit;
+            }
+
+            $imageFileName = "https://alope.id/quiz.alope.id/uploads/" . $imageFileName;
+        }
+
+        /* ------------------------------------------------
+        * UPLOAD AUDIO
+        * ------------------------------------------------ */
+        if (isset($_FILES['audio']) && $_FILES['audio']['error'] === UPLOAD_ERR_OK) {
+            $fileTmpPath = $_FILES['audio']['tmp_name'];
+            $originalFileName = $_FILES['audio']['name'];
+            $fileType = $_FILES['audio']['type'];
+            $fileSize = $_FILES['audio']['size'];
+
+            $allowedAudioTypes = [
+                'audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/ogg',
+                'audio/m4a', 'audio/mp4', 'audio/aac'
+            ];
+
+            if (!in_array($fileType, $allowedAudioTypes)) {
+                http_response_code(400);
+                echo json_encode(['status' => 'error', 'message' => 'Format audio tidak valid.']);
+                exit;
+            }
+
+            if ($fileSize > 10 * 1024 * 1024) { // 10MB
+                http_response_code(400);
+                echo json_encode(['status' => 'error', 'message' => 'Ukuran audio maksimal 10MB.']);
+                exit;
+            }
+
+            $ext = pathinfo($originalFileName, PATHINFO_EXTENSION);
+            $audioFileName = uniqid('course_audio_') . '.' . $ext;
+
+            $destPath = $uploadDir . $audioFileName;
+
+            if (!move_uploaded_file($fileTmpPath, $destPath)) {
+                http_response_code(500);
+                echo json_encode(['status' => 'error', 'message' => 'Gagal menyimpan file audio.']);
+                exit;
+            }
+
+            $audioFileName = "https://alope.id/quiz.alope.id/uploads/" . $audioFileName;
+        }
+
+
+        /* ------------------------------------------------
+        * UPLOAD VIDEO
+        * ------------------------------------------------ */
+        if (isset($_FILES['video']) && $_FILES['video']['error'] === UPLOAD_ERR_OK) {
+            $fileTmpPath = $_FILES['video']['tmp_name'];
+            $originalFileName = $_FILES['video']['name'];
+            $fileType = $_FILES['video']['type'];
+            $fileSize = $_FILES['video']['size'];
+
+            // Allowed video MIME types
+            $allowedVideoTypes = [
+                'video/mp4',
+                'video/quicktime', // mov
+                'video/x-matroska', // mkv
+                'video/webm'
+            ];
+
+            if (!in_array($fileType, $allowedVideoTypes)) {
+                http_response_code(400);
+                echo json_encode([
+                    'status' => 'error',
+                    'message' => 'Format video tidak valid. Hanya MP4, MOV, MKV, WEBM.'
+                ]);
+                exit;
+            }
+
+            // Max 100MB
+            if ($fileSize > 100 * 1024 * 1024) {
+                http_response_code(400);
+                echo json_encode([
+                    'status' => 'error',
+                    'message' => 'Ukuran video terlalu besar. Maksimal 100MB.'
+                ]);
+                exit;
+            }
+
+            $ext = pathinfo($originalFileName, PATHINFO_EXTENSION);
+            $videoFileName = uniqid('course_video_') . '.' . $ext;
+
+            $destPath = $uploadDir . $videoFileName;
+
+            if (!move_uploaded_file($fileTmpPath, $destPath)) {
+                http_response_code(500);
+                echo json_encode([
+                    'status' => 'error',
+                    'message' => 'Gagal menyimpan file video.'
+                ]);
+                exit;
+            }
+
+            $videoFileName = "https://alope.id/quiz.alope.id/uploads/" . $videoFileName;
+        }
+
+
+
+        /* ------------------------------------------------
+        * INSERT DATABASE
+        * ------------------------------------------------ */
+        try {
+            $stmt = $pdo->prepare("
+                INSERT INTO courses (title, cover, audio, video, description, body, account_id)
+                VALUES (:title, :cover, :audio, :video, :description, :body, :account_id)
+            ");
+
+            $result = $stmt->execute([
+                "title"       => $title,
+                "cover"       => $imageFileName,
+                "audio"       => $audioFileName,
+                "video"       => $videoFileName,
+                "description" => $description,
+                "body"        => $body,
+                "account_id"  => $account_id,
+            ]);
+
+            if ($result) {
+                http_response_code(200);
+                echo json_encode([
+                    'status' => 'success',
+                    'message' => 'Berhasil tambah Course',
+                    'data' => [
+                        'course_id' => $pdo->lastInsertId(),
+                        'cover_url' => $imageFileName,
+                        'audio_url' => $audioFileName,
+                        'video_url' => $videoFileName,
+                    ]
+                ]);
+            } else {
+                http_response_code(400);
+                echo json_encode([
+                    'status' => 'error',
+                    'message' => 'Gagal tambah Course'
+                ]);
+            }
+
+        } catch (PDOException $e) {
+
+            // Hapus file jika insert gagal
+            if ($imageFileName) @unlink($uploadDir . basename($imageFileName));
+            if ($audioFileName) @unlink($uploadDir . basename($audioFileName));
+            if ($videoFileName) @unlink($uploadDir . basename($videoFileName));
+
             http_response_code(500);
             echo json_encode([
                 'status' => 'error',
-                'message' => 'Gagal menyimpan file gambar.'
-            ]);
-            exit;
-        }
-
-        $imageFileName = "https://alope.id/quiz.alope.id/uploads/" . $imageFileName;
-    }
-
-    // Handle Audio Upload
-    if (isset($_FILES['audio']) && $_FILES['audio']['error'] === UPLOAD_ERR_OK) {
-        $fileTmpPath = $_FILES['audio']['tmp_name'];
-        $originalFileName = $_FILES['audio']['name'];
-        $fileType = $_FILES['audio']['type'];
-        $fileSize = $_FILES['audio']['size'];
-
-        // Validasi tipe file audio
-        $allowedAudioTypes = [
-            'audio/mpeg', 
-            'audio/mp3', 
-            'audio/wav', 
-            'audio/ogg', 
-            'audio/m4a',
-            'audio/mp4',
-            'audio/aac'
-        ];
-        
-        if (!in_array($fileType, $allowedAudioTypes)) {
-            http_response_code(400);
-            echo json_encode([
-                'status' => 'error',
-                'message' => 'Tipe file audio tidak didukung. Format yang diperbolehkan: MP3, WAV, OGG, M4A, AAC.'
-            ]);
-            exit;
-        }
-
-        // Validasi ukuran file (misal maksimal 10MB)
-        $maxFileSize = 10 * 1024 * 1024; // 10MB
-        if ($fileSize > $maxFileSize) {
-            http_response_code(400);
-            echo json_encode([
-                'status' => 'error',
-                'message' => 'Ukuran file audio terlalu besar. Maksimal 10MB.'
-            ]);
-            exit;
-        }
-
-        $ext = pathinfo($originalFileName, PATHINFO_EXTENSION);
-        $audioFileName = uniqid('course_audio_') . '.' . $ext;
-
-        $destPath = $uploadDir . $audioFileName;
-
-        if (!move_uploaded_file($fileTmpPath, $destPath)) {
-            http_response_code(500);
-            echo json_encode([
-                'status' => 'error',
-                'message' => 'Gagal menyimpan file audio.'
-            ]);
-            exit;
-        }
-
-        $audioFileName = "https://alope.id/quiz.alope.id/uploads/" . $audioFileName;
-    }
-
-    try {
-        $stmt = $pdo->prepare("
-            INSERT INTO
-                courses (title, cover, audio, description, body, account_id)
-            VALUES (:title, :cover, :audio, :description, :body, :account_id)
-        ");
-
-        $result = $stmt->execute([
-            "title"         => $title,
-            "cover"         => $imageFileName,
-            "audio"         => $audioFileName,
-            "description"   => $description,
-            "body"          => $body,
-            "account_id"    => $account_id,
-        ]);
-        
-        if ($result) {
-            // Making Response Success Insert
-            http_response_code(200);  // status code OK
-            echo json_encode([
-                'status' => 'success',
-                'message' => 'Tambah Course berhasil',
-                'data' => [
-                    'course_id' => $pdo->lastInsertId(),
-                    'cover_url' => $imageFileName,
-                    'audio_url' => $audioFileName
-                ]
-            ]);
-        } else {
-            // Making Response Error Insert
-            http_response_code(400);  // status code Bad Request
-            echo json_encode([
-                'status' => 'error',
-                'message' => 'Gagal Tambah Course'
+                'message' => 'Kesalahan pada server.',
+                'debug' => $e->getMessage()
             ]);
         }
-    }catch (PDOException $e) {
-        // Hapus file yang sudah diupload jika terjadi error database
-        if ($imageFileName && file_exists($uploadDir . basename($imageFileName))) {
-            unlink($uploadDir . basename($imageFileName));
-        }
-        if ($audioFileName && file_exists($uploadDir . basename($audioFileName))) {
-            unlink($uploadDir . basename($audioFileName));
-        }
-        
-        http_response_code(500);
-        echo json_encode([
-            'status' => 'error',
-            'message' => 'Terjadi kesalahan pada server.',
-            'debug' => $e->getMessage() // Hapus ini di production
-        ]);
-    }
 
         exit;
     }
